@@ -110,18 +110,28 @@ jmp GDT.Code:LongMode ; jmp from the Code segment to long mode
 
 [bits 64]
 LongMode:
+VID_MEM equ 0xb8000 ; video memory address
 
 mov edi, VID_MEM
 ;mov rax, 0x0f54 ; hex for black background '0', white character 'f' and the character T '54'
-mov rax, 0x1f201f201f201f20 ; blue background spacebar
-mov [VID_MEM], rax
+mov rax, 0x8f208f208f208f20 ; blue background spacebar
 mov ecx, 500
 rep stosq
-mov rax, 0x1f741f731f651f54 ; prints test
-mov [VID_MEM], rax
 
+jmp kernel
 
 hlt
-VID_MEM equ 0xb8000 ; video memory address
+;times 512-($-$$-512) db 0 ; times 1048576 = exact padding to fill up 1MB
 
-times 512 db 0 ; extra padding for Qemu so it knows there still is disk space
+kernel:
+
+mov rax, 0x8f658f4b
+mov [VID_MEM], rax
+
+mov rax, 0x8f6c8f658f6e8f72
+mov [VID_MEM + 4], rax
+
+hlt
+
+times 4096 db 0
+;times 5120 db 0
