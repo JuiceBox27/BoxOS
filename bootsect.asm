@@ -55,8 +55,6 @@ BOOT_SECT2_MSG: db "Second sector loaded", 0x0a, 0x0d, 0
 times 510-($-$$) db 0
 dw 0xaa55
 
-%include "./bootsectfunctions/checklm.asm"
-
 second_sector:
 mov si, BOOT_SECT2_MSG
 call printf
@@ -94,7 +92,7 @@ or eax, 1 << 5
 mov cr4, eax
 
 ; enabling long mode
-ecx, 0xc0000080
+mov ecx, 0xc0000080
 rdmsr
 or eax, 1 << 8 ; flip bit
 wrmsr ; write bit
@@ -104,4 +102,26 @@ or eax, 1 << 31
 or eax, 1 << 0
 mov cr0, eax
 
-times 512 db 0
+lgdt [GDT.Pointer] ; load the GDT at the pointer
+jmp GDT.Code:LongMode ; jmp from the Code segment to long mode
+
+%include "./bootsectfunctions/checklm.asm"
+%include "./bootsectfunctions/gdt.asm"
+
+[bits 64]
+LongMode:
+
+mov edi, VID_MEM
+;mov rax, 0x0f54 ; hex for black background '0', white character 'f' and the character T '54'
+mov rax, 0x1f201f201f201f20 ; blue background spacebar
+mov [VID_MEM], rax
+mov ecx, 500
+rep stosq
+mov rax, 0x1f741f731f651f54 ; prints test
+mov [VID_MEM], rax
+
+
+hlt
+VID_MEM equ 0xb8000 ; video memory address
+
+times 512 db 0 ; extra padding for Qemu so it knows there still is disk space
