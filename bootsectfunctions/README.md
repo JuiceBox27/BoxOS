@@ -1,4 +1,4 @@
 # BoxOS
 Boot Sector Functions
 
-This is where the iso is sent when it gets created from the Makefile.
+This is the folder in which all the custom functions of the bootloader go into in order to keep a clean file organization.
